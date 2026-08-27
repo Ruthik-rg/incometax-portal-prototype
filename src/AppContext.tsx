@@ -7,6 +7,7 @@ interface AppContextType {
   taxpayer: TaxpayerProfile;
   switchTaxpayer: (id: TaxpayerId) => void;
   resetTaxpayerScenario: (id?: TaxpayerId) => void;
+  triggerLoginModal: () => void;
   activeView: {
     type: 'home' | 'service' | 'utility' | 'login-gate';
     id?: CanonicalServiceId | PublicUtilityId;
@@ -56,6 +57,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const triggerLoginModal = () => {
+    setPendingLoginServiceId(null);
+    setActiveView({ type: 'login-gate' });
+  };
+
   const switchTaxpayer = (id: TaxpayerId) => {
     // Reset targeted persona back to pristine initial demo state upon login/switch
     if (id !== 'guest' && TAXPAYERS[id]) {
@@ -68,6 +74,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (pendingLoginServiceId && id !== 'guest') {
       setActiveView({ type: 'service', id: pendingLoginServiceId });
       setPendingLoginServiceId(null);
+    } else {
+      setActiveView({ type: 'home' });
     }
   };
 
@@ -321,6 +329,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         taxpayer,
         switchTaxpayer,
         resetTaxpayerScenario,
+        triggerLoginModal,
         activeView,
         navigateToService,
         navigateToUtility,

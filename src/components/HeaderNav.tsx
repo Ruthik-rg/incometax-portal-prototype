@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export const HeaderNav: React.FC = () => {
-  const { taxpayer, activeTaxpayerId, switchTaxpayer, navigateToService, navigateToUtility, navigateToHome } = useApp();
+  const { taxpayer, activeTaxpayerId, switchTaxpayer, triggerLoginModal, navigateToService, navigateToUtility, navigateToHome } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<'services' | 'tax-info' | 'about-us' | 'help' | null>(null);
 
@@ -229,7 +229,7 @@ export const HeaderNav: React.FC = () => {
 
           {isGuest ? (
             <button
-              onClick={() => handleServiceClick('file-itr')}
+              onClick={triggerLoginModal}
               className="bg-[#004B32] hover:bg-[#003825] text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm transition flex items-center gap-1.5"
             >
               <UserCheck size={14} />
