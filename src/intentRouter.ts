@@ -95,7 +95,7 @@ export function resolveIntent(query: string): IntentMatch | null {
         matchedServiceId: pattern.serviceId,
         title: pattern.title,
         description: pattern.description,
-        matchScore: score,
+        confidence: Math.min(100, score * 10),
       };
     }
   }
