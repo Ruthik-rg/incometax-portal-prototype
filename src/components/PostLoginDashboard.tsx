@@ -19,7 +19,9 @@ export const PostLoginDashboard: React.FC = () => {
   const isAadhaarLinked = taxpayer.aadhaarStatus.status === 'linked';
 
   const hasPendingNotice = taxpayer.notice && taxpayer.notice.status === 'action-required';
-  const hasFailedRefund = taxpayer.refund && (taxpayer.refund.status === 'failed' || taxpayer.refund.status === 'reissue-requested');
+  const isNoticeResolved = taxpayer.notice && taxpayer.notice.status === 'response-submitted';
+  const hasFailedRefund = taxpayer.refund && taxpayer.refund.status === 'failed';
+  const isRefundReissued = taxpayer.refund && taxpayer.refund.status === 'reissue-requested';
 
   // Dynamic values derived directly from active taxpayer profile
   const taxPayableOrRefund = return2026?.refundOrTaxDue || 0;
@@ -47,14 +49,20 @@ export const PostLoginDashboard: React.FC = () => {
             <span className={`text-xs font-extrabold uppercase px-3 py-1 rounded-full border flex items-center gap-1 ${
               hasPendingNotice || hasFailedRefund
                 ? 'bg-rose-100 text-rose-900 border-rose-300 animate-pulse'
+                : isNoticeResolved || isRefundReissued || isVerified
+                ? 'bg-emerald-100 text-[#004B32] border-emerald-300'
                 : 'bg-amber-100 text-amber-900 border-amber-300'
             }`}>
               <Sparkles size={13} />
               <span>
                 {hasPendingNotice
                   ? 'Action Required: Income Tax Notice Issued'
+                  : isNoticeResolved
+                  ? 'Notice Response Submitted & Under Review'
                   : hasFailedRefund
                   ? 'Action Required: Refund Credit Failed'
+                  : isRefundReissued
+                  ? 'Refund Reissue Request Dispatched'
                   : !isAadhaarLinked
                   ? 'Action Required: Link Aadhaar Pending'
                   : isDraft
@@ -71,8 +79,12 @@ export const PostLoginDashboard: React.FC = () => {
             <h3 className="font-serif font-black text-lg text-slate-900">
               {hasPendingNotice
                 ? 'Sec 143(1) Notice Received — Action Required'
+                : isNoticeResolved
+                ? 'Notice Response Submitted Successfully ✓'
                 : hasFailedRefund
                 ? 'Refund Credit Failed — Update Bank Account'
+                : isRefundReissued
+                ? 'Refund Reissue Dispatched to SBI CMP ✓'
                 : !isAadhaarLinked
                 ? 'Complete PAN-Aadhaar Linkage before filing'
                 : isDraft
@@ -84,8 +96,12 @@ export const PostLoginDashboard: React.FC = () => {
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
               {hasPendingNotice
                 ? `Assessing Officer observed a variance of ₹4.50L in SFT reported income. Respond to Notice ${taxpayer.notice?.din} before ${taxpayer.notice?.dueDate}.`
+                : isNoticeResolved
+                ? `Your written response for Notice ${taxpayer.notice?.din} has been recorded and submitted to Assessing Officer Ward 12(1).`
                 : hasFailedRefund
                 ? `Refund of ₹${taxpayer.refund?.amount.toLocaleString('en-IN')} returned by SBI CMP due to invalid bank details. Validate replacement bank to request reissue.`
+                : isRefundReissued
+                ? `Refund reissue request of ₹${taxpayer.refund?.amount.toLocaleString('en-IN')} has been validated and dispatched to SBI CMP.`
                 : !isAadhaarLinked
                 ? 'Demographic linking between PAN and Aadhaar is required to submit your return and process tax payments.'
                 : isDraft
@@ -113,9 +129,9 @@ export const PostLoginDashboard: React.FC = () => {
 
           <button
             onClick={() => navigateToService(
-              hasPendingNotice
+              hasPendingNotice || isNoticeResolved
                 ? 'respond-notices'
-                : hasFailedRefund
+                : hasFailedRefund || isRefundReissued
                 ? 'refund-status'
                 : !isAadhaarLinked
                 ? 'link-aadhaar'
@@ -130,8 +146,12 @@ export const PostLoginDashboard: React.FC = () => {
             <span>
               {hasPendingNotice
                 ? 'View & Respond to Notice u/s 143(1) →'
+                : isNoticeResolved
+                ? 'View Submitted Notice Response Receipt →'
                 : hasFailedRefund
                 ? 'Validate Bank & Request Refund Reissue →'
+                : isRefundReissued
+                ? 'View Dispatched Refund Reissue Status →'
                 : !isAadhaarLinked
                 ? 'Link Aadhaar Now →'
                 : isDraft
@@ -176,16 +196,20 @@ export const PostLoginDashboard: React.FC = () => {
               <div className={`text-base font-extrabold mt-0.5 ${
                 hasPendingNotice
                   ? 'text-rose-700'
+                  : isNoticeResolved || isRefundReissued || isVerified
+                  ? 'text-emerald-700'
                   : hasFailedRefund
                   ? 'text-amber-700'
-                  : isVerified
-                  ? 'text-emerald-700'
                   : 'text-amber-800'
               }`}>
                 {hasPendingNotice
                   ? 'Notice Issued'
+                  : isNoticeResolved
+                  ? 'Response Submitted ✓'
                   : hasFailedRefund
                   ? 'Refund Failed'
+                  : isRefundReissued
+                  ? 'Reissue Requested ✓'
                   : isVerified
                   ? 'Verified ✓'
                   : 'Pending Verification'}
@@ -193,8 +217,12 @@ export const PostLoginDashboard: React.FC = () => {
               <div className="text-[10px] text-slate-400">
                 {hasPendingNotice
                   ? 'Response Required'
+                  : isNoticeResolved
+                  ? 'Under CPC Review'
                   : hasFailedRefund
                   ? 'Reissue Needed'
+                  : isRefundReissued
+                  ? 'Dispatched to Bank'
                   : isAadhaarLinked
                   ? 'Aadhaar OTP Ready'
                   : 'Aadhaar Link Pending'}
