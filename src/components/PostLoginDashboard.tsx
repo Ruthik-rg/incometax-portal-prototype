@@ -126,8 +126,16 @@ export const PostLoginDashboard: React.FC = () => {
             <div className={`p-2 rounded-lg text-center ${isSubmitted || isVerified ? 'bg-emerald-100 text-[#004B32]' : 'bg-slate-100 text-slate-500'}`}>
               {isSubmitted || isVerified ? '✓ File Return' : '○ File Return'}
             </div>
-            <div className={`p-2 rounded-lg text-center ${isVerified ? 'bg-emerald-100 text-[#004B32]' : 'bg-slate-100 text-slate-500'}`}>
-              {isVerified ? '✓ e-Verified' : '○ e-Verify'}
+            <div
+              onClick={() => navigateToService('e-verify')}
+              className={`p-2 rounded-lg text-center transition cursor-pointer ${
+                isVerified
+                  ? 'bg-emerald-100 text-[#004B32]'
+                  : 'bg-amber-100 text-amber-900 border border-amber-300 animate-pulse hover:bg-amber-200'
+              }`}
+              title={!isVerified ? 'Click to complete e-Verification via Aadhaar OTP' : 'Return e-Verified'}
+            >
+              {isVerified ? '✓ e-Verified' : '● e-Verify Now →'}
             </div>
           </div>
 
