@@ -6,9 +6,14 @@ import { OfficialServiceGuideDrawer } from './OfficialServiceGuideDrawer';
 
 export const RefundStatusWorkflow: React.FC = () => {
   const { taxpayer, validateBankAndReissue } = useApp();
-  const [selectedBank, setSelectedBank] = useState('HDFC Bank (XXXX 7824)');
-  const [ifsc, setIfsc] = useState('HDFC000MOCK');
-  const [accNo, setAccNo] = useState('501002938411');
+
+  const replacementBank = taxpayer.bankAccounts.find((b) => !b.primary) || taxpayer.bankAccounts[0];
+  const [selectedBank, setSelectedBank] = useState(
+    replacementBank ? `${replacementBank.bankName} (${replacementBank.maskedAccount})` : 'Axis Bank (XXXX 9948)'
+  );
+  const [ifsc, setIfsc] = useState(replacementBank?.ifsc || 'UTIB000MOCK');
+  const [accNo, setAccNo] = useState('91801004928172');
+  const [isBankValidated, setIsBankValidated] = useState(false);
   const [isReissued, setIsReissued] = useState(taxpayer.refund?.status === 'reissue-requested');
 
   const refund = taxpayer.refund || {
@@ -26,8 +31,12 @@ export const RefundStatusWorkflow: React.FC = () => {
     ],
   };
 
-  const handleValidateAndReissue = (e: React.FormEvent) => {
+  const handleValidateBank = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsBankValidated(true);
+  };
+
+  const handleReissueRequest = () => {
     validateBankAndReissue(selectedBank);
     setIsReissued(true);
     confetti({ particleCount: 90, spread: 60, origin: { y: 0.6 } });
@@ -87,7 +96,11 @@ export const RefundStatusWorkflow: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <span className="bg-emerald-100 text-[#004B32] text-[10px] font-bold uppercase px-2 py-0.5 rounded">
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
+                  taxpayer.bankAccounts.find((b) => b.primary)?.validationStatus === 'failed'
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-emerald-100 text-[#004B32]'
+                }`}>
                   {taxpayer.bankAccounts.find((b) => b.primary)?.validationStatus || 'Validated'}
                 </span>
               </div>
@@ -133,7 +146,7 @@ export const RefundStatusWorkflow: React.FC = () => {
               </div>
             </div>
 
-            {/* Failed Refund Reissue Resolution Form (For Failed Scenarios) */}
+            {/* Failed Refund Step-by-Step Resolution Form (For Failed Scenarios) */}
             {refund.status === 'failed' && !isReissued && (
               <div className="space-y-4 border border-rose-200 rounded-xl p-5 bg-rose-50/40 animate-fadeIn">
                 <div className="flex items-start space-x-3 text-rose-900">
@@ -144,25 +157,43 @@ export const RefundStatusWorkflow: React.FC = () => {
                   </div>
                 </div>
 
-                <form onSubmit={handleValidateAndReissue} className="bg-white p-4 border border-rose-200 rounded-xl space-y-4">
-                  <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <Building size={16} className="text-emerald-600" />
-                    Validate Replacement Bank & Request Refund Reissue
-                  </h5>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">IFSC Code</label>
-                      <input
-                        type="text"
-                        value={ifsc}
-                        onChange={(e) => setIfsc(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-mono uppercase font-bold text-slate-900"
-                        required
-                      />
+                {!isBankValidated ? (
+                  <form onSubmit={handleValidateBank} className="bg-white p-4 border border-slate-200 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building size={16} className="text-amber-600" />
+                        Step 1: Validate Replacement Bank Account
+                      </h5>
+                      <span className="bg-amber-100 text-amber-900 text-[10px] font-bold uppercase px-2 py-0.5 rounded">
+                        Unvalidated Account
+                      </span>
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Select Replacement Bank</label>
+                        <input
+                          type="text"
+                          value={selectedBank}
+                          onChange={(e) => setSelectedBank(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-900"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">IFSC Code</label>
+                        <input
+                          type="text"
+                          value={ifsc}
+                          onChange={(e) => setIfsc(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-mono uppercase font-bold text-slate-900"
+                          required
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Account Number</label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Savings Account Number</label>
                       <input
                         type="text"
                         value={accNo}
@@ -171,15 +202,41 @@ export const RefundStatusWorkflow: React.FC = () => {
                         required
                       />
                     </div>
-                  </div>
 
-                  <button
-                    type="submit"
-                    className="w-full bg-[#004B32] hover:bg-[#003825] text-white font-bold text-xs py-2.5 rounded-lg transition shadow-sm"
-                  >
-                    Submit Refund Reissue Request
-                  </button>
-                </form>
+                    <button
+                      type="submit"
+                      className="w-full bg-[#004B32] hover:bg-[#003825] text-white font-bold text-xs py-2.5 rounded-lg transition shadow-sm flex items-center justify-center gap-1.5"
+                    >
+                      <ShieldCheck size={16} />
+                      <span>Validate Replacement Bank Account →</span>
+                    </button>
+                  </form>
+                ) : (
+                  <div className="bg-white p-5 border-2 border-emerald-500/60 rounded-xl space-y-4 animate-fadeIn text-center">
+                    <div className="inline-flex p-2.5 bg-emerald-100 rounded-full text-[#004B32]">
+                      <CheckCircle2 size={36} />
+                    </div>
+
+                    <div>
+                      <span className="bg-emerald-100 text-[#004B32] text-[10px] font-bold uppercase px-2.5 py-0.5 rounded font-mono">
+                        Bank Pre-Validated ✓
+                      </span>
+                      <h5 className="font-bold text-base text-slate-900 mt-1.5">Step 2: Request Refund Reissue</h5>
+                      <p className="text-xs text-slate-600 mt-1 max-w-md mx-auto">
+                        <strong>{selectedBank}</strong> has been successfully validated with NPCI/PFMS gateway for refund credit.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleReissueRequest}
+                      className="w-full bg-[#004B32] hover:bg-[#003825] text-white font-bold text-xs py-3 rounded-xl transition shadow-md flex items-center justify-center gap-1.5"
+                    >
+                      <RefreshCw size={16} />
+                      <span>Dispatch Refund Reissue Request to SBI CMP →</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -200,8 +257,7 @@ export const RefundStatusWorkflow: React.FC = () => {
               'Provides refund reissue request facility for failed transactions',
             ]}
             keyRules={[
-              'Bank accounts must be pre-validated and PAN-linked for refund credit',
-              'Interest on refund under Sec 244A @ 0.5% per month is paid if refund delay exceeds 30 days',
+              'Bank accounts must be pre-validated and linked with PAN before refund credit',
             ]}
             officialDocRef="incometax.gov.in/RefundStatus-Guide-2026"
           />

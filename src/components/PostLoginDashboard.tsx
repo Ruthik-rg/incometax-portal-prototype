@@ -3,7 +3,7 @@ import { useApp } from '../AppContext';
 import { Sparkles, ArrowRight, RefreshCw, AlertCircle, FileText, Bell, ChevronDown, ChevronUp, History, CheckCircle2, ShieldCheck, Link } from 'lucide-react';
 
 export const PostLoginDashboard: React.FC = () => {
-  const { taxpayer, navigateToService } = useApp();
+  const { taxpayer, navigateToService, markNotificationAsRead } = useApp();
 
   // State for View More / See Less toggles (Default: 2 items)
   const [showAllActivities, setShowAllActivities] = useState(false);
@@ -262,12 +262,23 @@ export const PostLoginDashboard: React.FC = () => {
 
             <div className="space-y-2.5">
               {displayedNotifications.map((notif) => (
-                <div key={notif.id} className="p-3 bg-amber-50/60 border border-amber-200/70 rounded-xl space-y-1 text-xs">
+                <div
+                  key={notif.id}
+                  onClick={() => markNotificationAsRead(notif.id)}
+                  className={`p-3 rounded-xl space-y-1 text-xs transition cursor-pointer ${
+                    !notif.read
+                      ? 'bg-amber-100/90 border-2 border-amber-400 shadow-sm ring-1 ring-amber-300'
+                      : 'bg-slate-50 border border-slate-200 opacity-80'
+                  }`}
+                >
                   <div className="flex justify-between items-start">
-                    <span className="font-bold text-amber-950">{notif.title}</span>
+                    <div className="flex items-center gap-1.5 font-bold text-amber-950">
+                      {!notif.read && <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>}
+                      <span>{notif.title}</span>
+                    </div>
                     <span className="text-[9px] text-amber-800 font-mono">{notif.timestamp}</span>
                   </div>
-                  <p className="text-[11px] text-amber-900/90 leading-snug">{notif.description}</p>
+                  <p className="text-[11px] text-slate-700 leading-snug">{notif.description}</p>
                 </div>
               ))}
             </div>

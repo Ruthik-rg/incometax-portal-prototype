@@ -25,6 +25,7 @@ interface AppContextType {
   submitNoticeResponse: (explanation: string) => void;
   recordTaxPayment: (amount: number, type: string) => void;
   linkAadhaarSuccess: () => void;
+  markNotificationAsRead: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -322,6 +323,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const markNotificationAsRead = (id: string) => {
+    setTaxpayerWorlds((prev) => {
+      if (activeTaxpayerId === 'guest') return prev;
+      const current = { ...(prev[activeTaxpayerId] || TAXPAYERS[activeTaxpayerId]) };
+      current.notifications = current.notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+      return { ...prev, [activeTaxpayerId]: current };
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -343,6 +353,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         submitNoticeResponse,
         recordTaxPayment,
         linkAadhaarSuccess,
+        markNotificationAsRead,
       }}
     >
       {children}

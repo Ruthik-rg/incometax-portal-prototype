@@ -217,10 +217,6 @@ export const HeaderNav: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center space-x-3">
-          <button className="p-2 rounded-full hover:bg-slate-200/60 text-slate-600 transition">
-            <Search size={16} />
-          </button>
-
           <div className="flex items-center space-x-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
             <Globe size={13} />
             <span>English</span>
