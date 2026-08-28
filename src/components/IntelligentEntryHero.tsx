@@ -6,7 +6,7 @@ import { Search, ArrowRight, CornerDownLeft, Calendar as CalendarIcon, Clock, Sh
 import { CALENDAR_EVENTS } from '../mockData';
 
 export const IntelligentEntryHero: React.FC = () => {
-  const { navigateToService, navigateToUtility, switchTaxpayer, activeTaxpayerId } = useApp();
+  const { navigateToService, navigateToUtility, switchTaxpayer, activeTaxpayerId, triggerLoginModal } = useApp();
   const [query, setQuery] = useState('');
   const [match, setMatch] = useState<IntentMatch | null>(null);
 
@@ -423,7 +423,7 @@ export const IntelligentEntryHero: React.FC = () => {
 
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => switchTaxpayer('priya')}
+                onClick={triggerLoginModal}
                 className="bg-[#004B32] hover:bg-[#003825] text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm transition flex items-center gap-1.5"
               >
                 <UserCheck size={15} />

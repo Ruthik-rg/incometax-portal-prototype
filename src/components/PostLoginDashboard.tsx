@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { Sparkles, ArrowRight, RefreshCw, AlertCircle, FileText, Bell, ChevronDown, ChevronUp, History, CheckCircle2, ShieldCheck, Link } from 'lucide-react';
+import type { NotificationAlert } from '../types';
+import { Sparkles, ArrowRight, RefreshCw, AlertCircle, FileText, Bell, ChevronDown, ChevronUp, History, CheckCircle2, ShieldCheck, Link, X, ExternalLink } from 'lucide-react';
 
 export const PostLoginDashboard: React.FC = () => {
   const { taxpayer, navigateToService, markNotificationAsRead } = useApp();
@@ -8,6 +9,9 @@ export const PostLoginDashboard: React.FC = () => {
   // State for View More / See Less toggles (Default: 2 items)
   const [showAllActivities, setShowAllActivities] = useState(false);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
+
+  // State for Notification Detail Modal Popup
+  const [selectedNotificationModal, setSelectedNotificationModal] = useState<NotificationAlert | null>(null);
 
   const displayedActivities = showAllActivities ? taxpayer.actionHistory : taxpayer.actionHistory.slice(0, 2);
   const displayedNotifications = showAllNotifications ? taxpayer.notifications : taxpayer.notifications.slice(0, 2);
@@ -292,8 +296,11 @@ export const PostLoginDashboard: React.FC = () => {
               {displayedNotifications.map((notif) => (
                 <div
                   key={notif.id}
-                  onClick={() => markNotificationAsRead(notif.id)}
-                  className={`p-3 rounded-xl space-y-1 text-xs transition cursor-pointer ${
+                  onClick={() => {
+                    markNotificationAsRead(notif.id);
+                    setSelectedNotificationModal(notif);
+                  }}
+                  className={`p-3 rounded-xl space-y-1 text-xs transition cursor-pointer hover:shadow-md ${
                     !notif.read
                       ? 'bg-amber-100/90 border-2 border-amber-400 shadow-sm ring-1 ring-amber-300'
                       : 'bg-slate-50 border border-slate-200 opacity-80'
@@ -301,12 +308,12 @@ export const PostLoginDashboard: React.FC = () => {
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-1.5 font-bold text-amber-950">
-                      {!notif.read && <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>}
+                      {!notif.read && <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse border border-white shadow-sm"></span>}
                       <span>{notif.title}</span>
                     </div>
                     <span className="text-[9px] text-amber-800 font-mono">{notif.timestamp}</span>
                   </div>
-                  <p className="text-[11px] text-slate-700 leading-snug">{notif.description}</p>
+                  <p className="text-[11px] text-slate-700 leading-snug line-clamp-2">{notif.description}</p>
                 </div>
               ))}
             </div>
@@ -324,6 +331,75 @@ export const PostLoginDashboard: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Notification Detail Modal Popup */}
+      {selectedNotificationModal && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-fadeIn">
+            
+            {/* Modal Header */}
+            <div className="bg-[#0b2341] text-white p-5 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-[#004B32] rounded-lg">
+                  <Bell size={18} className="text-amber-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">CBDT Official System Alert</div>
+                  <h3 className="text-base font-bold font-serif">{selectedNotificationModal.title}</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedNotificationModal(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="flex justify-between items-center text-xs text-slate-500 font-mono border-b pb-2">
+                <span>Timestamp: <strong>{selectedNotificationModal.timestamp}</strong></span>
+                <span className="bg-emerald-100 text-[#004B32] px-2 py-0.5 rounded font-sans font-bold text-[10px] uppercase">
+                  Marked as Read ✓
+                </span>
+              </div>
+
+              <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-xl text-xs text-amber-950 leading-relaxed font-medium">
+                {selectedNotificationModal.description}
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 font-mono flex justify-between">
+                <span>Associated PAN: <strong>{taxpayer.pan}</strong></span>
+                <span>Assessment Year: <strong>AY 2026-27</strong></span>
+              </div>
+
+              <div className="pt-2 flex space-x-3">
+                {selectedNotificationModal.serviceId && (
+                  <button
+                    onClick={() => {
+                      const srvId = selectedNotificationModal.serviceId!;
+                      setSelectedNotificationModal(null);
+                      navigateToService(srvId);
+                    }}
+                    className="flex-1 bg-[#004B32] hover:bg-[#003825] text-white font-bold text-xs py-3 rounded-xl transition shadow-md flex items-center justify-center gap-1.5"
+                  >
+                    <ExternalLink size={14} />
+                    <span>Proceed to Related Service →</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setSelectedNotificationModal(null)}
+                  className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs py-3 rounded-xl transition"
+                >
+                  Close Alert
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };
