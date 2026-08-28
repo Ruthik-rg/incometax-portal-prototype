@@ -113,12 +113,12 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
 ];
 
 // -------------------------------------------------------------
-// 1. FLAGSHIP TAXPAYER: PRIYA SHAH (The Normal Filer)
+// 1. PRIYA SHAH (Normal Salaried Filer -> Refund Scenario)
 // -------------------------------------------------------------
 const priyaGross = 1224000;
 const priyaTaxResultNew = computeTaxAY2026(priyaGross, 0, 'new'); 
 const priyaTDS = 105000; 
-const priyaCalculatedRefund = Math.max(0, priyaTDS - priyaTaxResultNew.finalTaxPayable);
+const priyaCalculatedRefund = Math.max(0, priyaTDS - priyaTaxResultNew.finalTaxPayable); // ₹47,904
 
 export const FLAGSHIP_PRIYA_SHAH: TaxpayerProfile = {
   id: 'priya',
@@ -134,8 +134,8 @@ export const FLAGSHIP_PRIYA_SHAH: TaxpayerProfile = {
   aadhaar: 'XXXX XXXX 4821',
   mobile: '98XXXXXX42',
   email: 'priya.shah@example.test',
-  statusTag: '👩 Priya — The Normal Filer (Salary → ITR → e-Verify → Refund)',
-  scenarioDescription: 'Salaried software engineer in Bengaluru. Preferred New Tax Regime with ₹12.24L gross income, pre-filled return draft 80% complete, ₹1.05L TDS paid, and pending submission/e-verification.',
+  statusTag: '👩 Priya — Normal Salaried Filer (Salary → ITR → e-Verify → Refund)',
+  scenarioDescription: 'Salaried software engineer in Bengaluru. Salary ₹12.00L + Savings interest ₹24k = ₹12.24L gross income. ₹1.05L TDS paid exceeds ₹57,096 tax liability, resulting in ₹47,904 refund.',
 
   salary: {
     basicMonthly: 50000,
@@ -205,7 +205,7 @@ export const FLAGSHIP_PRIYA_SHAH: TaxpayerProfile = {
     ay: 'AY 2026-27',
     transactions: [
       {
-        id: 'AIS-01',
+        id: 'AIS-PRI-01',
         category: 'Salary Information (Sec 192)',
         informationCode: 'SAL-192',
         sourceName: 'ABC Technologies Pvt. Ltd.',
@@ -214,7 +214,7 @@ export const FLAGSHIP_PRIYA_SHAH: TaxpayerProfile = {
         date: '31-Mar-2026',
       },
       {
-        id: 'AIS-02',
+        id: 'AIS-PRI-02',
         category: 'Savings Bank Interest (Sec 194A)',
         informationCode: 'INT-SB',
         sourceName: 'HDFC Bank - Savings Account',
@@ -330,24 +330,443 @@ export const FLAGSHIP_PRIYA_SHAH: TaxpayerProfile = {
 };
 
 // -------------------------------------------------------------
-// 2. FIRST-TIME TAXPAYER: MALLIKARJUN RAO (Self-Assessment Tax Payable)
+// 2. RIYA NAIR (Failed Refund Scenario -> Bank Reissue)
+// -------------------------------------------------------------
+const riyaGross = 1140000; // Salary 10.8L + Savings 18k + FD 42k
+const riyaTaxResult = computeTaxAY2026(riyaGross, 0, 'new'); // Taxable 10.65L -> Tax 46,500
+const riyaTotalTDS = 124200; // Salary TDS 1.20L + FD TDS 4,200
+const riyaRefund = Math.max(0, riyaTotalTDS - riyaTaxResult.finalTaxPayable); // ₹77,700
+
+export const RIYA_NAIR: TaxpayerProfile = {
+  id: 'riya',
+  name: 'Riya Nair',
+  taxpayerType: 'Individual',
+  residentialStatus: 'Resident Individual',
+  age: 31,
+  occupation: 'Marketing Lead',
+  city: 'Mumbai, Maharashtra',
+  ay: 'AY 2026-27',
+  fy: 'FY 2025-26',
+  pan: 'ABCDE9876F',
+  aadhaar: 'XXXX XXXX 1928',
+  mobile: '98XXXXXX88',
+  email: 'riya.nair@example.test',
+  statusTag: '👩 Riya — Failed Refund Scenario (Filed → Refund Failed → Validate Replacement Bank → Reissue)',
+  scenarioDescription: 'Marketing lead in Mumbai. Filed AY 2026-27 return claiming ₹77,700 refund. CPC issued refund but SBI CMP returned it due to closed primary bank account. Requires bank validation & reissue request.',
+
+  salary: {
+    basicMonthly: 45000,
+    hraMonthly: 22500,
+    specialAllowanceMonthly: 17500,
+    otherAllowanceMonthly: 5000,
+    grossMonthly: 90000,
+    grossAnnual: 1080000,
+    employerName: 'Global Brand Media Ltd.',
+    employerType: 'Private Company (Media)',
+    industry: 'Advertising & Marketing',
+    officeCity: 'Mumbai',
+    employeeId: 'GBM-RN-1928',
+    designation: 'Marketing Lead',
+    period: 'April 2025 – March 2026',
+    employerTan: 'MUMG98765A',
+  },
+
+  income: {
+    salary: 1080000,
+    savingsInterest: 18000,
+    fdInterest: 42000,
+    dividend: 0,
+    grossTotalIncome: 1140000,
+  },
+
+  deductions: {
+    sec80C: 0,
+    sec80D: 0,
+    sec80CCD1B: 0,
+    totalDeductions: 0,
+  },
+
+  form16: {
+    certificateNo: 'F16-AY2026-GBM-1928',
+    employerName: 'Global Brand Media Ltd.',
+    employerTan: 'MUMG98765A',
+    employeeName: 'Riya Nair',
+    employeePan: 'ABCDE9876F',
+    ay: 'AY 2026-27',
+    fy: 'FY 2025-26',
+    grossSalary: 1080000,
+    taxableSalary: 1005000,
+    tdsDeducted: 120000,
+    certificateStatus: 'Available',
+  },
+
+  form26as: {
+    ay: 'AY 2026-27',
+    fy: 'FY 2025-26',
+    pan: 'ABCDE9876F',
+    partA_TDS: [
+      {
+        id: '26as-riya-1',
+        tan: 'MUMG98765A',
+        deductorName: 'Global Brand Media Ltd.',
+        section: '192',
+        totalIncomePaid: 1080000,
+        tdsDeposited: 120000,
+        quarter: 'Q1-Q4',
+      },
+      {
+        id: '26as-riya-2',
+        tan: 'MUMB12345C',
+        deductorName: 'Axis Bank Ltd.',
+        section: '194A',
+        totalIncomePaid: 42000,
+        tdsDeposited: 4200,
+        quarter: 'Q4',
+      },
+    ],
+    totalTDS: riyaTotalTDS,
+  },
+
+  ais: {
+    ay: 'AY 2026-27',
+    transactions: [
+      {
+        id: 'AIS-RIY-01',
+        category: 'Salary Information (Sec 192)',
+        informationCode: 'SAL-192',
+        sourceName: 'Global Brand Media Ltd.',
+        amount: 1080000,
+        tdsAmount: 120000,
+        date: '31-Mar-2026',
+      },
+      {
+        id: 'AIS-RIY-02',
+        category: 'Savings Bank Interest (Sec 194A)',
+        informationCode: 'INT-SB',
+        sourceName: 'Old Legacy Bank - Savings Account',
+        amount: 18000,
+        tdsAmount: 0,
+        date: '31-Mar-2026',
+      },
+      {
+        id: 'AIS-RIY-03',
+        category: 'Fixed Deposit Interest (Sec 194A)',
+        informationCode: 'INT-FD',
+        sourceName: 'Axis Bank - FD Account',
+        amount: 42000,
+        tdsAmount: 4200,
+        date: '31-Mar-2026',
+      },
+    ],
+  },
+
+  tis: {
+    salaryIncome: 1080000,
+    interestIncome: 60000,
+    dividendIncome: 0,
+    totalReportedIncome: 1140000,
+  },
+
+  bankAccounts: [
+    {
+      id: 'BANK-RIYA-PRIMARY',
+      bankName: 'Old Legacy Bank',
+      accountType: 'Savings Account',
+      maskedAccount: 'XXXX XXXX 1102',
+      ifsc: 'OLGB000MOCK',
+      holderName: 'Riya Nair',
+      primary: true,
+      validationStatus: 'failed',
+    },
+    {
+      id: 'BANK-RIYA-REPLACEMENT',
+      bankName: 'Axis Bank',
+      accountType: 'Savings Account',
+      maskedAccount: 'XXXX XXXX 9948',
+      ifsc: 'UTIB000MOCK',
+      holderName: 'Riya Nair',
+      primary: false,
+      validationStatus: 'unvalidated',
+    },
+  ],
+
+  aadhaarStatus: {
+    pan: 'ABCDE9876F',
+    aadhaarMasked: 'XXXX XXXX 1928',
+    status: 'linked',
+    linkedDate: '10 January 2023',
+  },
+
+  returns: {
+    'AY2026-27': {
+      id: 'RET-2026-RIYA',
+      ay: 'AY 2026-27',
+      fy: 'FY 2025-26',
+      itrForm: 'ITR-1 (Sahaj)',
+      status: 'processed',
+      verificationStatus: 'verified',
+      acknowledgementNo: '883920194827',
+      submittedDate: '10-Jul-2026',
+      verifiedDate: '10-Jul-2026',
+      grossIncome: 1140000,
+      deductions: 0,
+      taxableIncome: 1065000,
+      computedTax: riyaTaxResult.finalTaxPayable,
+      tdsClaimed: riyaTotalTDS,
+      refundOrTaxDue: riyaRefund,
+    },
+  },
+
+  refund: {
+    ay: 'AY 2026-27',
+    refundId: 'REF-AY2627-RIYA-8839',
+    amount: riyaRefund,
+    status: 'failed',
+    failureReason: 'SBI CMP transaction rejected: Account Closed / Invalid IFSC for Old Legacy Bank (XXXX 1102).',
+    primaryBankId: 'BANK-RIYA-PRIMARY',
+    replacementBankId: 'BANK-RIYA-REPLACEMENT',
+    timeline: [
+      { stage: 'Return Filed & Verified', date: '10-Jul-2026', status: 'completed' },
+      { stage: 'Return Processed by CPC', date: '25-Jul-2026', status: 'completed' },
+      { stage: 'Refund Issued to SBI CMP', date: '01-Aug-2026', status: 'completed' },
+      { stage: 'Bank Credit Transfer', date: '02-Aug-2026 (FAILED)', status: 'active' },
+      { stage: 'Refund Reissue Request', date: 'Action Required', status: 'pending' },
+    ],
+  },
+
+  actionHistory: [
+    {
+      id: 'act-riy-1',
+      title: 'Refund Credit Failed Notification Received',
+      timestamp: '02-Aug-2026',
+      badge: 'Action Required',
+      serviceId: 'refund-status',
+    },
+  ],
+
+  notifications: [
+    {
+      id: 'notif-riy-1',
+      title: 'Refund Reissue Action Required',
+      description: 'Your refund of ₹77,700 for AY 2026-27 failed due to account validation error. Validate Axis Bank & request reissue now.',
+      timestamp: 'Yesterday',
+      read: false,
+      serviceId: 'refund-status',
+    },
+  ],
+};
+
+// -------------------------------------------------------------
+// 3. KARAN MEHTA (Compliance / Notice Scenario)
+// -------------------------------------------------------------
+const karanGross = 1892000; // Professional Receipts 18.6L + Savings Interest 32k
+const karanTaxResult = computeTaxAY2026(karanGross, 0, 'new'); // Taxable 18.17L -> Tax 2,05,100
+const karanTDS = 186000;
+
+export const KARAN_MEHTA: TaxpayerProfile = {
+  id: 'karan',
+  name: 'Karan Mehta',
+  taxpayerType: 'Individual (Professional)',
+  residentialStatus: 'Resident Individual',
+  age: 35,
+  occupation: 'Independent IT Consultant',
+  city: 'Delhi NCR',
+  ay: 'AY 2026-27',
+  fy: 'FY 2025-26',
+  pan: 'KLMNO5432P',
+  aadhaar: 'XXXX XXXX 9931',
+  mobile: '98XXXXXX55',
+  email: 'karan.consulting@example.test',
+  statusTag: '👨 Karan — Compliance Scenario (Sec 143(1) Notice → e-Proceedings → Respond → Submit)',
+  scenarioDescription: 'IT consultant in Delhi NCR. Filed ITR-3 reporting ₹18.92L business receipts. Received Sec 143(1) notice regarding SFT high-value transaction mismatch of ₹4.50L. Action required before 15-Sep-2026 deadline.',
+
+  salary: {
+    basicMonthly: 0,
+    hraMonthly: 0,
+    specialAllowanceMonthly: 0,
+    otherAllowanceMonthly: 0,
+    grossMonthly: 0,
+    grossAnnual: 0,
+    employerName: 'Self-Employed / Independent Consultant',
+    employerType: 'Professional Practice',
+    industry: 'IT Consulting',
+    officeCity: 'Delhi NCR',
+    employeeId: 'PROP-KM-5432',
+    designation: 'Principal Consultant',
+    period: 'April 2025 – March 2026',
+    employerTan: 'N/A',
+  },
+
+  income: {
+    salary: 0,
+    savingsInterest: 32000,
+    fdInterest: 0,
+    dividend: 0,
+    grossTotalIncome: 1892000,
+  },
+
+  deductions: {
+    sec80C: 0,
+    sec80D: 0,
+    sec80CCD1B: 0,
+    totalDeductions: 0,
+  },
+
+  form16: {
+    certificateNo: 'N/A (Professional Income)',
+    employerName: 'N/A',
+    employerTan: 'N/A',
+    employeeName: 'Karan Mehta',
+    employeePan: 'KLMNO5432P',
+    ay: 'AY 2026-27',
+    fy: 'FY 2025-26',
+    grossSalary: 0,
+    taxableSalary: 0,
+    tdsDeducted: 0,
+    certificateStatus: 'Pending',
+  },
+
+  form26as: {
+    ay: 'AY 2026-27',
+    fy: 'FY 2025-26',
+    pan: 'KLMNO5432P',
+    partA_TDS: [
+      {
+        id: '26as-kar-1',
+        tan: 'DELC12345K',
+        deductorName: 'Enterprise Cloud Systems Ltd.',
+        section: '194J',
+        totalIncomePaid: 1860000,
+        tdsDeposited: 186000,
+        quarter: 'Q1-Q4',
+      },
+    ],
+    totalTDS: karanTDS,
+  },
+
+  ais: {
+    ay: 'AY 2026-27',
+    transactions: [
+      {
+        id: 'AIS-KAR-01',
+        category: 'Professional Fees (Sec 194J)',
+        informationCode: 'PRO-194J',
+        sourceName: 'Enterprise Cloud Systems Ltd.',
+        amount: 1860000,
+        tdsAmount: 186000,
+        date: '31-Mar-2026',
+      },
+      {
+        id: 'AIS-KAR-02',
+        category: 'Savings Bank Interest (Sec 194A)',
+        informationCode: 'INT-SB',
+        sourceName: 'Kotak Mahindra Bank',
+        amount: 32000,
+        tdsAmount: 0,
+        date: '31-Mar-2026',
+      },
+      {
+        id: 'AIS-KAR-03',
+        category: 'High-Value SFT Financial Transaction (SFT-005)',
+        informationCode: 'SFT-005',
+        sourceName: 'Kotak Mahindra Bank - Securities Transfer',
+        amount: 450000,
+        tdsAmount: 0,
+        date: '15-Jan-2026',
+      },
+    ],
+  },
+
+  tis: {
+    salaryIncome: 0,
+    interestIncome: 32000,
+    dividendIncome: 0,
+    totalReportedIncome: 1892000,
+  },
+
+  bankAccounts: [
+    {
+      id: 'BANK-KARAN-01',
+      bankName: 'Kotak Mahindra Bank',
+      accountType: 'Current Account',
+      maskedAccount: 'XXXX XXXX 4410',
+      ifsc: 'KKBK000MOCK',
+      holderName: 'Karan Mehta',
+      primary: true,
+      validationStatus: 'validated',
+    },
+  ],
+
+  aadhaarStatus: {
+    pan: 'KLMNO5432P',
+    aadhaarMasked: 'XXXX XXXX 9931',
+    status: 'linked',
+    linkedDate: '12 August 2022',
+  },
+
+  returns: {
+    'AY2026-27': {
+      id: 'RET-2026-KAR',
+      ay: 'AY 2026-27',
+      fy: 'FY 2025-26',
+      itrForm: 'ITR-3',
+      status: 'submitted',
+      verificationStatus: 'verified',
+      acknowledgementNo: '992019482012',
+      submittedDate: '01-Aug-2026',
+      verifiedDate: '01-Aug-2026',
+      grossIncome: 1892000,
+      deductions: 0,
+      taxableIncome: 1817000,
+      computedTax: karanTaxResult.finalTaxPayable,
+      tdsClaimed: karanTDS,
+      refundOrTaxDue: karanTaxResult.finalTaxPayable - karanTDS,
+    },
+  },
+
+  notice: {
+    noticeId: 'NOT-2026-1431-094',
+    din: 'ITBA/AST/S/143(1)/2026-27/105942',
+    section: '143(1)(a) Proposed Adjustment',
+    ay: 'AY 2026-27',
+    issuedDate: '12-Aug-2026',
+    dueDate: '15-Sep-2026',
+    status: 'action-required',
+    summary: 'Assessing Officer observed a variance of ₹4,50,000 between SFT-005 Reported Securities Receipt and Gross Business Income in ITR-3.',
+    amount: 450000,
+  },
+
+  refund: undefined,
+
+  actionHistory: [
+    {
+      id: 'act-kar-1',
+      title: 'Notice u/s 143(1)(a) Issued by CPC',
+      timestamp: '12-Aug-2026',
+      badge: 'Notice Issued',
+      serviceId: 'respond-notices',
+    },
+  ],
+
+  notifications: [
+    {
+      id: 'notif-kar-1',
+      title: 'Compliance Action Required: Sec 143(1) Notice',
+      description: 'Response required for Notice ITBA/AST/S/143(1) regarding SFT reconciliation before 15-Sep-2026.',
+      timestamp: '2 days ago',
+      read: false,
+      serviceId: 'respond-notices',
+    },
+  ],
+};
+
+// -------------------------------------------------------------
+// 4. MALIKARJUN (First-Time Taxpayer -> Tax Payable Scenario)
 // -------------------------------------------------------------
 const mallikarjunGross = 1425000;
 const mallikarjunTaxResult = computeTaxAY2026(mallikarjunGross, 0, 'new'); 
-// Math Check for Mallikarjun (AY 2026-27 New Regime):
-// Taxable Income = 14,25,000 - 75,000 = 13,50,000
-// 0-4L @ 0%: 0
-// 4L-8L @ 5%: 20,000
-// 8L-12L @ 10%: 40,000
-// 12L-13.5L @ 15%: 22,500
-// Base Tax = 82,500
-// Cess 4% = 3,300
-// Total Tax Liability = 85,800
-// TDS Paid by Employer (Bharat Digital Solutions) = 65,000
-// Self-Assessment Tax Payable = 85,800 - 65,000 = 20,800!
-
 const mallikarjunTDS = 65000;
-const mallikarjunTaxPayable = mallikarjunTaxResult.finalTaxPayable - mallikarjunTDS; // Exactly ₹20,800!
+const mallikarjunTaxPayable = mallikarjunTaxResult.finalTaxPayable - mallikarjunTDS; // Exactly ₹20,800
 
 export const MALLIKARJUN_RAO: TaxpayerProfile = {
   id: 'malikarjun',
@@ -479,7 +898,6 @@ export const MALLIKARJUN_RAO: TaxpayerProfile = {
     status: 'not-linked',
   },
 
-  // First-time filer has NO historical returns
   returns: {
     'AY2026-27': {
       id: 'RET-2026-MAL',
@@ -491,13 +909,13 @@ export const MALLIKARJUN_RAO: TaxpayerProfile = {
       grossIncome: 1425000,
       deductions: 0,
       taxableIncome: 1350000,
-      computedTax: mallikarjunTaxResult.finalTaxPayable, // ₹85,800
-      tdsClaimed: mallikarjunTDS, // ₹65,000
-      refundOrTaxDue: -mallikarjunTaxPayable, // -₹20,800 (Tax Due)
+      computedTax: mallikarjunTaxResult.finalTaxPayable,
+      tdsClaimed: mallikarjunTDS,
+      refundOrTaxDue: -mallikarjunTaxPayable, // Negative indicates tax payable balance
     },
   },
 
-  refund: undefined, // First-time filer with tax due has no refund record
+  refund: undefined,
 
   actionHistory: [
     {
@@ -539,16 +957,95 @@ export const MALLIKARJUN_RAO: TaxpayerProfile = {
 // Registered Mock Taxpayer Profiles
 export const TAXPAYERS: Record<string, TaxpayerProfile> = {
   priya: FLAGSHIP_PRIYA_SHAH,
+  riya: RIYA_NAIR,
+  karan: KARAN_MEHTA,
   malikarjun: MALLIKARJUN_RAO,
 };
 
-// Default Pre-login Guest State
+// Clean Default Pre-login Guest State (Unauthenticated)
 export const GUEST_TAXPAYER: TaxpayerProfile = {
-  ...FLAGSHIP_PRIYA_SHAH,
   id: 'guest',
   name: 'Guest User (Unauthenticated)',
+  taxpayerType: 'Individual',
+  residentialStatus: 'Resident Individual',
+  age: 0,
+  occupation: 'Public Explorer',
+  city: 'India',
+  ay: 'AY 2026-27',
+  fy: 'FY 2025-26',
   pan: 'PRE-LOGIN-GUEST',
   aadhaar: 'XXXX XXXX 0000',
+  mobile: '0000000000',
+  email: 'guest@incometax.test',
   statusTag: 'Guest / Unauthenticated Mode',
-  scenarioDescription: 'Guest user exploring public services. Protected services trigger the Centralized Access Control Gate.',
+  scenarioDescription: 'Guest user exploring public services. Transactional services collect & validate PAN before triggering the Authentication Gate.',
+  salary: {
+    basicMonthly: 0,
+    hraMonthly: 0,
+    specialAllowanceMonthly: 0,
+    otherAllowanceMonthly: 0,
+    grossMonthly: 0,
+    grossAnnual: 0,
+    employerName: 'Unassigned',
+    employerType: 'Public',
+    industry: 'N/A',
+    officeCity: 'N/A',
+    employeeId: 'N/A',
+    designation: 'N/A',
+    period: 'N/A',
+    employerTan: 'N/A',
+  },
+  income: {
+    salary: 0,
+    savingsInterest: 0,
+    fdInterest: 0,
+    dividend: 0,
+    grossTotalIncome: 0,
+  },
+  deductions: {
+    sec80C: 0,
+    sec80D: 0,
+    sec80CCD1B: 0,
+    totalDeductions: 0,
+  },
+  form16: {
+    certificateNo: 'N/A',
+    employerName: 'N/A',
+    employerTan: 'N/A',
+    employeeName: 'Unauthenticated Guest',
+    employeePan: 'PRE-LOGIN-GUEST',
+    ay: 'AY 2026-27',
+    fy: 'FY 2025-26',
+    grossSalary: 0,
+    taxableSalary: 0,
+    tdsDeducted: 0,
+    certificateStatus: 'Pending',
+  },
+  form26as: {
+    ay: 'AY 2026-27',
+    fy: 'FY 2025-26',
+    pan: 'PRE-LOGIN-GUEST',
+    partA_TDS: [],
+    totalTDS: 0,
+  },
+  ais: {
+    ay: 'AY 2026-27',
+    transactions: [],
+  },
+  tis: {
+    salaryIncome: 0,
+    interestIncome: 0,
+    dividendIncome: 0,
+    totalReportedIncome: 0,
+  },
+  bankAccounts: [],
+  aadhaarStatus: {
+    pan: 'PRE-LOGIN-GUEST',
+    aadhaarMasked: 'XXXX XXXX 0000',
+    status: 'not-linked',
+  },
+  returns: {},
+  refund: undefined,
+  actionHistory: [],
+  notifications: [],
 };

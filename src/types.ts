@@ -108,7 +108,7 @@ export interface BankAccount {
   ifsc: string;
   holderName: string;
   primary: boolean;
-  validationStatus: 'validated' | 'pending' | 'failed';
+  validationStatus: 'validated' | 'pending' | 'failed' | 'unvalidated';
 }
 
 export interface AadhaarLinkStatus {

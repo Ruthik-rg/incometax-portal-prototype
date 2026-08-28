@@ -14,7 +14,12 @@ export const LoginGateModal: React.FC = () => {
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loginWithPreservedIntent(selectedPersona);
+    // Resolve matching persona ID from entered PAN or default to selectedPersona
+    const cleanPan = userPan.trim().toUpperCase();
+    const matchedKey = (Object.keys(TAXPAYERS) as TaxpayerId[]).find(
+      (k) => TAXPAYERS[k].pan.toUpperCase() === cleanPan
+    );
+    loginWithPreservedIntent(matchedKey || selectedPersona);
   };
 
   const PERSONA_KEYS = Object.keys(TAXPAYERS) as TaxpayerId[];
@@ -92,7 +97,14 @@ export const LoginGateModal: React.FC = () => {
               <input
                 type="text"
                 value={userPan}
-                onChange={(e) => setUserPan(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setUserPan(val);
+                  const matched = (Object.keys(TAXPAYERS) as TaxpayerId[]).find(
+                    (k) => TAXPAYERS[k].pan.toUpperCase() === val.trim().toUpperCase()
+                  );
+                  if (matched) setSelectedPersona(matched);
+                }}
                 className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-mono font-bold text-slate-900"
                 required
               />

@@ -82,11 +82,13 @@ export const RefundStatusWorkflow: React.FC = () => {
                   <Building size={16} className="text-[#004B32]" />
                   <div>
                     <span className="font-bold text-[#1E3A2B]">Designated Primary Bank:</span>
-                    <span className="text-slate-600 font-mono ml-1.5">HDFC Bank (XXXX 7824)</span>
+                    <span className="text-slate-600 font-mono ml-1.5">
+                      {taxpayer.bankAccounts.find((b) => b.primary)?.bankName || 'Primary Bank'} ({taxpayer.bankAccounts.find((b) => b.primary)?.maskedAccount || 'XXXX 7824'})
+                    </span>
                   </div>
                 </div>
                 <span className="bg-emerald-100 text-[#004B32] text-[10px] font-bold uppercase px-2 py-0.5 rounded">
-                  Validated & Pre-validated
+                  {taxpayer.bankAccounts.find((b) => b.primary)?.validationStatus || 'Validated'}
                 </span>
               </div>
             </div>
